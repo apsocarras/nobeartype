@@ -1,6 +1,6 @@
 [project]
 name = "nobeartype"
-version = "0.1.0"
+version = "0.1.1"
 description = "Bear proof your functions. It's basic stuff."
 readme = "README.md"
 authors = [
