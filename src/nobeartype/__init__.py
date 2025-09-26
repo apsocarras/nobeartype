@@ -49,23 +49,18 @@ class NoBearType:
     beartype.roar.BeartypeCallHintReturnViolation: Function ... return 'Foo' violates type hint <class 'int'>, as str 'Foo' not instance of int.
 
     >>> NoBearType.registry()   # doctest: +ELLIPSIS
-    (<function my_bad_func at 0x...>,)
+    {<function my_bad_func at 0x...>}
     >>> assert len(nobeartype) == 1
 
     >>> NoBearType.clear()   # doctest: +ELLIPSIS
     >>> assert len(nobeartype) == 0
     >>> nobeartype.registry()
-    ()
+    set()
 
     ```
     """
 
-    _orig_to_wrapper: ClassVar[_WKD[_OC, _OC]] = WeakKeyDictionary[
-        Callable[..., object], Callable[..., object]
-    ]()
-    _wrapper_to_orig: ClassVar[_WVD[_OC, _OC]] = WeakValueDictionary[
-        Callable[..., object], Callable[..., object]
-    ]()
+    _registry: ClassVar[set[_OC]] = set[_OC]()
 
     def __call__(self, func: Callable[P, R]) -> Callable[P, R]:
         no_bear_type = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
@@ -75,28 +70,28 @@ class NoBearType:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             return func(*args, **kwargs)
 
-        self._orig_to_wrapper[func] = wrapper
-        self._wrapper_to_orig[wrapper] = func
+        self._registry.add(func)
         return wrapper
 
     @classmethod
     def __len__(cls) -> int:
-        return len(cls._orig_to_wrapper)
+        return len(cls._registry)
 
     @classmethod
-    def registry(cls) -> tuple[_OC]:
-        return tuple[_OC](cls._orig_to_wrapper.keys())
+    def __contains__(cls, func: _OC) -> bool:
+        return func in cls._registry
 
     @classmethod
-    def wrapper_for(cls, func: _OC) -> _OC | None:
-        """Get the wrapper for a given original function, if any."""
-        return cls._orig_to_wrapper.get(func)
+    def registry(cls) -> set[_OC]:
+        return cls._registry
 
     @classmethod
     def clear(cls) -> None:
-        """Clear all tracked registrations."""
-        cls._orig_to_wrapper.clear()
-        cls._wrapper_to_orig.clear()
+        cls._registry.clear()
+
+    @classmethod
+    def deregister(cls, func: _OC) -> _OC | None:
+        return cls._registry.discard(func)
 
 
 nobeartype: NoBearType = NoBearType()
