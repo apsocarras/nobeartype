@@ -1,6 +1,6 @@
 # nobeartype
 
-Disable beartype's runtime type checking for a specific function, protecting it in case global runtime checking is on.
+Disable [`beartype`](https://beartype.readthedocs.io/en/latest/) runtime type checking for a specific function, protecting it in case global runtime checking is on.
 This is needed if your functions expose return types from external libraries like flask which beartype can't inspect.
 
 IMHO, when using beartype it's best to enable it on a per-function basis or after import in your testing suite: `beartype_package('foo')`
